@@ -1,3 +1,5 @@
+
+    
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
@@ -19,7 +21,7 @@ MongoClient.connect(url,function(err,db){
   var dbo=db.db("db1")
   dbo.collection('exercise').update(
     {},
-    {$set:{username: String,description:[],duration:[],date:[Date]}},{multi:true}
+    {$set:{username: String,log:[]}},{multi:true}
   )
   })
 
@@ -45,9 +47,10 @@ function validateUserId(userId,callback){
      MongoClient.connect(url,function(err,db){
     if(err) return err
     var dbo1=db.db("db1")
+    //console.log("ert")
     //var myObj1={id:userId}
     //console.log(myObj1)
-    var f=dbo1.collection("exercise").find({"_id":ObjectId(userId)}).count()
+    var f=dbo1.collection("exercise").find({_id:ObjectId(userId)}).count()
     .then(function(num){
       console.log(num)
       if(num>0) callback(null,true)
@@ -65,13 +68,13 @@ function UpdateExercise(user,desc,dur,dat,callback){
     var r=new Date()
     var MyObj={'_id':ObjectId(user),description:desc,duration:dat,date:dat}
     //{$set:{"description":desc}}
-    var newValues={$push:{description:desc,"duration":dur,date:dat}}
+    var newValues={$push:{log:{description:desc,"duration":dur,date:dat}}}
    
     dbo.collection("exercise").findOneAndUpdate({"_id":ObjectId(user)},newValues,{returnOriginal: false})
     .then(function(num){
-      //console.log(num.value.username)
+      console.log(num)
       var result={}
-      result.username=num.value.username
+      result.id=user
       result.description=desc
       result.duration=dur
       result.date=dat
@@ -89,7 +92,7 @@ function InsertUser(user,callback){
     if(err) {callback(err,null) 
              return }
     var dbo=db.db("db1")
-    var myObj={username:user,description:[]}
+    var myObj={username:user}
     //console.log(myObj)
     dbo.collection("exercise").insert(myObj,function(err,db){
       
@@ -254,3 +257,4 @@ app.use((err, req, res, next) => {
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
+
